@@ -270,12 +270,10 @@ To utilize the functionalities provided by each class, instantiate the respectiv
 ```php
 <?php
 // Example of using the Database class
-$db = new Database();
-$db->connect();
-$result = $db->query("SELECT * FROM users");
-$data = $db->fetchAll($result);
+$result = Database::query("SELECT * FROM users");
+$data = Database::fetchAll($result);
 print_r($data);
-$db->disconnect();
+Database::disconnect();
 
 // Example of using the FirebaseAuth class
 $auth = new FirebaseAuth($apiKey);
@@ -295,7 +293,7 @@ $filter->notEqual('status', 'inactive');
 
 // Example of using the CompositeFilter class
 $compositeFilter = new CompositeFilter();
-$compositeFilter->filters([new FieldFilter(), new FieldFilter()], 'AND');
+$compositeFilter->filters([$filter1, $filter2], 'AND');
 
 // Example of using the UnaryFilter class
 $unaryFilter = new UnaryFilter();
