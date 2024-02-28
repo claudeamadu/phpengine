@@ -390,6 +390,11 @@ $userInfo = User::get();
 
 - [Claude Amadu](https://github.com/claudeamadu)
 
+## Third-party scripts & plugins
+
+- [PHPMailer](https://github.com/PHPMailer/PHPMailer)
+- [simple-router](https://github.com/skipperbent/simple-php-router)
+
 ## License
 
 GNU GENERAL PUBLIC LICENSE
