@@ -239,6 +239,9 @@ This project documentation provides an overview of the various classes, methods,
 - **authenticate()**: Authenticates the user.
 - **create(data)**: Creates a new user.
 - **get()**: Retrieves user data.
+
+### Helper functions
+
 - **requestdata(key)**: Retrieves data from the request.
 - **password(password)**: Generates a hashed password.
 - **generateapikey(length)**: Generates an API key.
