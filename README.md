@@ -392,4 +392,4 @@ $userInfo = $user->get();
 
 ## License
 
-This project
+GNU GENERAL PUBLIC LICENSE
