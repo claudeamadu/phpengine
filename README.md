@@ -379,9 +379,8 @@ $response = $paystack->createSubAccount($name, $bank, $number, $email);
 echo $response;
 
 // Example of using the User class
-$user = new User();
-$user->create($userData);
-$userInfo = $user->get();
+User::create($userData);
+$userInfo = User::get();
 ```
 
 ## Creator
