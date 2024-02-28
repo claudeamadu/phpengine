@@ -317,7 +317,7 @@ echo $response;
 // Example of using the Route class
 Route::define($routePath);
 Route::api($routePath);
-Route::heal($routePath);
+Route::head($routePath);
 
 // Example of using the View class
 View::make($viewPath);
