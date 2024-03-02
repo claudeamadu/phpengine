@@ -21,7 +21,14 @@ set_error_handler("errorHandler");
 
 
 /**
- * Engine
+ * PHP Engine
+ *
+ * This PHP library provides a simple, flexible, and powerful PHP framework for building web applications.
+ *
+ * @version 1.1
+ * @license GNU
+ * @author Claude Amadu
+ * @link https://github.com/claudeamadu/phpengine
  */
 class Engine
 {
