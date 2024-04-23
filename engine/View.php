@@ -72,7 +72,32 @@ class View
         // Get the content from the buffer
         $content = ob_get_clean();
 
+        // Replace {{variable}}, {{CONSTANT}} or {{function()}}
+        $content = preg_replace_callback('/\{\{(.+?)\}\}/', function ($matches) {
+            $code = $matches[1];
+            if (strpos($code, '$') === 0) {
+                // It's a variable
+                return "<?=" . $code . "?>";
+            } elseif (strpos($code, '(') !== false || strpos($code, '::') !== false) {
+                // It's a function or method
+                return "<?=" . $code . "?>";
+            } elseif (preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $code)) {
+                // It's a constant
+                return "<?=" . $code . "?>";
+            }else{
+                // It's a statement
+                return "<?=" . $code . "?>";
+            }
+        }, $content);
+
+        // Evaluate the PHP code in the content
+        ob_start();
+        eval ('?>' . $content);
+        $content = ob_get_clean();
+
         // Return the rendered view content
         return $content;
     }
+
+
 }

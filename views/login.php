@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?=APPNAME?> | Log in </title>
+  <title>{{APPNAME}} | Log in </title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet"
@@ -25,13 +25,13 @@
     <div class="card card-outline card-primary">
       <div class="card-header text-center">
         <a href="index2.html" class="h1"><b>
-            <?= APPNAME ?>
+           {{APPNAME}}
           </b></a>
       </div>
       <div class="card-body">
         <p class="login-box-msg">Sign in to start your session</p>
 
-        <form action="<?= Route::api('login'); ?>" method="post">
+        <form action="{{ Route::api('login'); }}" method="post">
           <div class="input-group mb-3">
             <input type="email" name="email" class="form-control" placeholder="Email">
             <div class="input-group-append">
@@ -86,7 +86,7 @@
   <script src="plugins/sweetalert2/sweetalert2.min.js"></script>
   <!-- AdminLTE App -->
   <script src="dist/js/adminlte.min.js"></script>
-  <?= SessionMessage::showMessage(); ?>
+  {{ SessionMessage::showMessage(); }}
 </body>
 
 </html>

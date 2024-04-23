@@ -562,3 +562,49 @@ function displayFunctionsFromFile($filePath)
     }
 }
 
+function generateOTP($type, $length) {
+    $otp = '';
+    switch($type) {
+        case 'Alphabets':
+            $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            break;
+        case 'Numbers':
+            $characters = '0123456789';
+            break;
+        case 'Alphanumeric':
+            $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            break;
+        default:
+            return 'Invalid OTP type';
+    }
+    
+    $charactersLength = strlen($characters);
+    for ($i = 0; $i < $length; $i++) {
+        $otp .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $otp;
+}
+
+function addMinutesToDate($originalDate, $minutesToAdd)
+{
+    // Create a DateTime object from the original date
+    $date = new DateTime($originalDate);
+
+    // Add the specified number of minutes
+    $date->add(new DateInterval('PT' . $minutesToAdd . 'M'));
+
+    // Return the new date
+    return $date->format('Y-m-d H:i:s');
+}
+
+function isOTPValid($start, $end)
+{
+    $currentDateTime = new DateTime(); // Current date and time
+
+    // Convert start and end timestamps to DateTime objects
+    $startDate = new DateTime($start);
+    $endDate = new DateTime($end);
+
+    // Check if the current date and time is within the OTP validity period
+    return ($currentDateTime >= $startDate && $currentDateTime <= $endDate);
+}
