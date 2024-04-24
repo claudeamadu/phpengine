@@ -2,9 +2,11 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{APPNAME}} | Log in </title>
+  {{ 
+    MetaTags::viewPort();
+    MetaTags::charset(); 
+  }}
+  <title>{{ APPNAME }} | Log in </title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet"
@@ -17,6 +19,30 @@
   <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="assets/css/adminlte.min.css">
+  <?php
+  Schema::Article(
+    "Sample Article Title",
+    "Sample article description.",
+    "John Doe",
+    "2024-04-23T08:00:00Z",
+    "https://example.com/article.jpg"
+  );
+  ?>
+<?php
+$ograph = new OGTags(
+  'Coding Ladies Club, Coding Ladies Academy',
+  'Coding Ladies Academy',
+  'website',
+  'https://codingladies.org',
+  'https://codingladies.org/assets/images/favicon.png',
+  'icon',
+  'Coding Ladies Academy',
+  'Coding Ladies Academy is a pioneering educational platform dedicated to empowering women with cutting-edge coding skills and fostering their success in the ever-evolving tech industry.',
+  'Coding Ladies Academy is a pioneering educational platform dedicated to empowering women with cutting-edge coding skills and fostering their success in the ever-evolving tech industry.'
+);
+
+echo $ograph->generateTags();
+?>
 </head>
 
 <body class="hold-transition login-page">

@@ -70,6 +70,7 @@ class Engine
                 $directory . '/engine/helpers/',
                 $directory . '/engine/middlewares/',
                 $directory . '/engine/models/',
+                $directory . '/engine/firebase/',
             ];
 
             foreach ($baseDirs as $baseDir) {
