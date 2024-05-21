@@ -97,6 +97,33 @@ class FirestoreDB
         }
     }
     /**
+     * Get collection with limit
+     *
+     * @param string $collection
+     * @param integer $limit
+     * @return string
+     */
+    public function getCollection2($collection, $limit = 100)
+    {
+        $map = [];
+        $requestOptions = [
+            'method' => 'GET',
+            'headers' => [
+                'Authorization: Bearer ' . $this->token,
+            ],
+        ];
+        $url = "{$this->baseUrl}/documents/{$collection}?pageSize={$limit}";
+
+        try {
+            $response = $this->executeRequest($url, $requestOptions);
+            return $response;
+        } catch (Exception $error) {
+            echo 'Error getting collection: ' . $error->getMessage();
+            throw $error;
+        }
+    }
+
+    /**
      * Create document
      *
      * @param string $collection

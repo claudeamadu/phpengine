@@ -39,7 +39,7 @@ class Schema
             ];
         }
 
-        echo "<script type=\"application/ld+json\">" . str_replace('\/','/',json_encode($breadcrumbList)) . "</script>";
+        echo "<script type=\"application/ld+json\">" . str_replace('\/', '/', json_encode($breadcrumbList)) . "</script>";
     }
 
     public static function Event($name, $startDate, $endDate, $location)
@@ -120,8 +120,8 @@ class Schema
             "@context" => "https://schema.org/",
             "@type" => "LocalBusiness",
             "name" => $name,
-			"image" => $image,
-			"priceRange" => $priceRange,
+            "image" => $image,
+            "priceRange" => $priceRange,
             "address" => [
                 "@type" => "PostalAddress",
                 "streetAddress" => $address['streetAddress'],
@@ -135,7 +135,7 @@ class Schema
         ]) . "</script>";
     }
 
-    public static function Organization($name, $description, $url, $logo, $email, $phone, $address)
+    public static function Organization($name, $description, $url, $logo, $email, $phone)
     {
         echo "<script type=\"application/ld+json\">" . json_encode([
             "@context" => "https://schema.org/",
@@ -145,16 +145,8 @@ class Schema
             "url" => $url,
             "logo" => $logo,
             "image" => $logo,
-			"email" => $email,
-			"telephone" => $phone,
-			"address" => [
-				"@type" => "PostalAddress",
-                "streetAddress" => $address['streetAddress'],
-                "addressLocality" => $address['addressLocality'],
-                "addressRegion" => $address['addressRegion'],
-                "postalCode" => $address['postalCode'],
-                "addressCountry" => $address['addressCountry']
-				]
+            "email" => $email,
+            "telephone" => $phone
         ]) . "</script>";
     }
 
@@ -262,8 +254,19 @@ class Schema
         echo "<script type=\"application/ld+json\">" . json_encode($courseList) . "</script>";
     }
 
-    public static function CourseInfo($name, $description, $provider, $providerUrl)
-    {
+    public static function CourseInfo(
+        $name,
+        $description,
+        $provider,
+        $providerUrl,
+        $courseUrl,
+        $offersCategory,
+        $offersPrice,
+        $offersPriceCurrency,
+        $courseMode,
+        $courseWorkload = null,
+        $courseSchedule = null
+    ) {
         echo "<script type=\"application/ld+json\">" . json_encode([
             "@context" => "https://schema.org/",
             "@type" => "Course",
@@ -273,7 +276,84 @@ class Schema
                 "@type" => "Organization",
                 "name" => $provider,
                 "sameAs" => $providerUrl
+            ],
+            "hasCourseInstance" => [
+                "@type" => "CourseInstance",
+                "url" => $courseUrl,
+                "courseMode" => $courseMode,
+                ($courseMode === "Blended" ? "courseSchedule" : "courseWorkload") => $courseMode === "Blended" ? $courseSchedule : $courseWorkload
+            ],
+            "offers" => [
+                "@type" => "Offer",
+                "category" => $offersCategory,
+                "price" => $offersPrice,
+                "priceCurrency" => $offersPriceCurrency
             ]
+        ]) . "</script>";
+    }
+
+
+    public static function AdvancedCppCourse(
+        $courseId,
+        $name,
+        $description,
+        $publisherName,
+        $publisherUrl,
+        $providerName,
+        $providerUrl,
+        $imageUrls,
+        $aggregateRating,
+        $offers,
+        $totalHistoricalEnrollment,
+        $datePublished,
+        $educationalLevel,
+        $about,
+        $teaches,
+        $financialAidEligible,
+        $inLanguage,
+        $availableLanguage,
+        $syllabusSections,
+        $reviews,
+        $coursePrerequisites,
+        $educationalCredentialAwarded,
+        $video,
+        $courseInstances,
+        $hasPart
+    ) {
+        echo "<script type=\"application/ld+json\">" . json_encode([
+            "@context" => "https://schema.org/",
+            "@id" => $courseId,
+            "@type" => "Course",
+            "name" => $name,
+            "description" => $description,
+            "publisher" => [
+                "@type" => "Organization",
+                "name" => $publisherName,
+                "url" => $publisherUrl
+            ],
+            "provider" => [
+                "@type" => "Organization",
+                "name" => $providerName,
+                "url" => $providerUrl
+            ],
+            "image" => $imageUrls,
+            "aggregateRating" => $aggregateRating,
+            "offers" => $offers,
+            "totalHistoricalEnrollment" => $totalHistoricalEnrollment,
+            "datePublished" => $datePublished,
+            "educationalLevel" => $educationalLevel,
+            "about" => $about,
+            "teaches" => $teaches,
+            "financialAidEligible" => $financialAidEligible,
+            "inLanguage" => $inLanguage,
+            "availableLanguage" => $availableLanguage,
+            "syllabusSections" => $syllabusSections,
+            "review" => $reviews,
+            "coursePrerequisites" => $coursePrerequisites,
+            "educationalCredentialAwarded" => $educationalCredentialAwarded,
+            "video" => $video,
+            "hasCourseInstance" => $courseInstances,
+            "hasPart" => $hasPart
         ]) . "</script>";
     }
 
@@ -318,18 +398,6 @@ class Schema
         ]) . "</script>";
     }
 
-    public static function ProfilePage($name, $url, $description, $mainEntityOfPage)
-    {
-        echo "<script type=\"application/ld+json\">" . json_encode([
-            "@context" => "https://schema.org/",
-            "@type" => "ProfilePage",
-            "name" => $name,
-            "url" => $url,
-            "description" => $description,
-            "mainEntityOfPage" => $mainEntityOfPage
-        ]) . "</script>";
-    }
-
     public static function ReviewSnippet($itemReviewed, $reviews)
     {
         $reviewSnippet = [
@@ -356,6 +424,22 @@ class Schema
         }
 
         echo "<script type=\"application/ld+json\">" . json_encode($reviewSnippet) . "</script>";
+    }
+
+    public static function ProfilePage($name, $alternateName, $identifier, $description, $image, $sameAs = []) {
+        echo "<script type=\"application/ld+json\">".json_encode([
+            "@context" => "https://schema.org",
+            "@type" => "ProfilePage",
+            "mainEntity" => [
+                "@type" => "Person",
+                "name" => $name,
+                "alternateName" => $alternateName,
+                "identifier" => $identifier,
+                "description" => $description,
+                "image" => $image,
+                "sameAs" => $sameAs
+            ]
+        ])."</script>";
     }
 }
 

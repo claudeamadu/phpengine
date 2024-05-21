@@ -71,6 +71,7 @@ class Engine
                 $directory . '/engine/middlewares/',
                 $directory . '/engine/models/',
                 $directory . '/engine/firebase/',
+                $directory . '/engine/paystack/',
             ];
 
             foreach ($baseDirs as $baseDir) {

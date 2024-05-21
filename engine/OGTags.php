@@ -12,7 +12,7 @@ class OGTags
     private $ogDescription;
     private $description;
 
-    public function __construct($keywords, $ogTitle, $ogType, $ogUrl, $ogImage, $ogImageAlt, $ogSiteName, $ogDescription, $description)
+    public function __construct($keywords, $ogTitle, $ogType, $ogUrl, $ogImage, $ogImageAlt, $ogSiteName, $ogDescription)
     {
         $this->keywords = $keywords;
         $this->ogTitle = $ogTitle;
@@ -22,7 +22,7 @@ class OGTags
         $this->ogImageAlt = $ogImageAlt;
         $this->ogSiteName = $ogSiteName;
         $this->ogDescription = $ogDescription;
-        $this->description = $description;
+        $this->description = $ogDescription;
     }
 
     public function generateTags()
