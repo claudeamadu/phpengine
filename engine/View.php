@@ -28,6 +28,45 @@ class View
         $view = new self('views/' . $viewPath . '.php');
         return $view->render();
     }
+    /**
+     * Displays a pagee with header and footer
+     * @param string $viewPath
+     * @param bool $nav
+     * @param bool $footer
+     * @return bool|string
+     */
+    public static function page(string $viewPath, bool $nav = true, bool $footer = true): mixed
+    {
+        // Initialize the view
+        $view = new self('views/' . $viewPath . '.php');
+
+        // Capture the rendered view
+        $content = $view->render();
+
+        // Include nav.php if $nav is true
+        if ($nav) {
+            $navPath = 'views/layout/navbar.php';
+            if (file_exists($navPath)) {
+                ob_start();
+                include $navPath;
+                $navContent = ob_get_clean();
+                $content = $navContent . $content;
+            }
+        }
+
+        // Include footer.php if $footer is true
+        if ($footer) {
+            $footerPath = 'views/layout/footer.php';
+            if (file_exists($footerPath)) {
+                ob_start();
+                include $footerPath;
+                $footerContent = ob_get_clean();
+                $content .= $footerContent;
+            }
+        }
+
+        return $content;
+    }
 
     /**
      * Returns a view from errors folder

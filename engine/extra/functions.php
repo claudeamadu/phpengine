@@ -7,8 +7,16 @@
  */
 function requestData($key)
 {
-    return isset($_REQUEST[$key]) ? $_REQUEST[$key] : null;
+    // Check if the key is present in $_REQUEST first
+    if (isset($_REQUEST[$key])) {
+        return $_REQUEST[$key];
+    }
+    
+    // If not in $_REQUEST, check if data exists in php://input
+    $input = json_decode(file_get_contents("php://input"), true);
+    return isset($input[$key]) ? $input[$key] : null;
 }
+
 /**
  * Hashes password
  *
@@ -333,6 +341,10 @@ function sendSMS($apiKey, $recipientNumber, $message, $senderId)
 {
     // Set the API endpoint
     $url = 'https://sms.smsnotifygh.com/smsapi';
+    
+    $headers = [
+        "Content-Type: application/json",
+    ];
 
     // Prepare the data to be sent
     $postData = [
@@ -348,8 +360,10 @@ function sendSMS($apiKey, $recipientNumber, $message, $senderId)
     // Set cURL options
     curl_setopt_array($curl, [
         CURLOPT_URL => $url . '?' . http_build_query($postData),
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_SSL_VERIFYPEER => false, // Use only for testing, not recommended in production
+        CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_POSTFIELDS => http_build_query($postData),
+        CURLOPT_RETURNTRANSFER => true
     ]);
 
     // Execute cURL session
@@ -607,4 +621,184 @@ function isOTPValid($start, $end)
 
     // Check if the current date and time is within the OTP validity period
     return ($currentDateTime >= $startDate && $currentDateTime <= $endDate);
+}
+
+
+/**
+ * Generates a 10-digit index number based on a date string and an ID number.
+ *
+ * @param string $dateString The date string in the format "YYYY-MM-DD HH:MM:SS".
+ * @param int $idNumber The ID number to be included in the index number.
+ * @return string The formatted 10-digit index number.
+ */
+function generateIndexNumber($dateString, $idNumber) {
+    // Extract the year from the date string
+    $year = substr($dateString, 0, 4);
+
+    // Pad the ID number with leading zeros to ensure it is 6 digits long
+    $paddedIdNumber = str_pad($idNumber, 6, "0", STR_PAD_LEFT);
+
+    // Concatenate the year and the padded ID number
+    $indexNumber = $year . $paddedIdNumber;
+
+    return $indexNumber;
+}
+
+function sanitizeString($input) {
+    // Convert the string to lowercase
+    $input = strtolower($input);
+
+    // Replace spaces with underscores
+    $input = str_replace(' ', '_', $input);
+
+    // Remove all characters that are not letters, numbers, or underscores
+    $input = preg_replace('/[^a-z0-9_]/', '', $input);
+
+    return $input;
+}
+
+function base64ToImage($base64String, $outputDir, $originalFileName) {
+    // Extract the file extension from the original file name
+    $extension = pathinfo($originalFileName, PATHINFO_EXTENSION);
+
+    // Generate a unique filename
+    $uniqueFileName = uniqid('file_') . '_' . time() . '.' . $extension;
+
+    // Ensure the output directory ends with a slash
+    if (substr($outputDir, -1) !== '/') {
+        $outputDir .= '/';
+    }
+
+    // Combine the directory and unique filename to get the full output file path
+    $outputFile = $outputDir . $uniqueFileName;
+
+    // Split the base64 string to remove the data URI scheme (if present)
+    $data = explode(',', $base64String);
+
+    // Decode the base64 string into binary data
+    $imageData = base64_decode($data[1]);
+
+    // Create the directory if it doesn't exist
+    if (!is_dir($outputDir)) {
+        mkdir($outputDir, 0777, true);
+    }
+
+    // Write the binary data to a file
+    file_put_contents($outputFile, $imageData);
+
+    // Return the path of the saved image file
+    return $outputFile;
+}
+
+/**
+ * Fetches and processes JSON data from a given URL.
+ *
+ * @param string $url The URL to fetch JSON data from.
+ * @return array|null Returns the processed data if successful, otherwise null.
+ */
+function fetchAndProcessJsonData($url) {
+    // Fetch the JSON data from the URL
+    $json = file_get_contents($url);
+
+    // Check if the request was successful
+    if ($json === FALSE) {
+        return null;
+    }
+
+    // Decode the JSON data
+    $data = json_decode($json, true);
+
+    // Check if decoding was successful
+    if ($data === NULL) {
+        return null;
+    }
+
+    // Check the status and message
+    if ($data['status'] == 200 && $data['message'] == 'OK') {
+        // Return the data
+        return $data['data'];
+    } else {
+        return null;
+    }
+}
+
+function addPrefixSuffix($inputString, $prefix, $suffix) {
+    // Extract the first 7 characters from the input string
+    $firstSevenChars = substr($inputString, 0, 7);
+    
+    // Concatenate the prefix, first 7 characters, and suffix
+    $result = $prefix . $firstSevenChars . $suffix;
+    
+    return $result;
+}
+
+function replaceAlphabetsWithIndex($inputString) {
+    $outputString = '';
+    
+    // Loop through each character in the string
+    for ($i = 0; $i < strlen($inputString); $i++) {
+        // Check if the character is an alphabet (A-Z or a-z)
+        if (ctype_alpha($inputString[$i])) {
+            // Append the 1-based index to the output string
+            $outputString .= ($i + 1);
+        } else {
+            // Append the original character to the output string
+            $outputString .= $inputString[$i];
+        }
+    }
+    
+    return $outputString;
+}
+
+
+function sidebarActive($menu, $class): string
+{
+    // Get the current URL path (relative to the base URL)
+    $currentUrl = trim($_SERVER['REQUEST_URI'], '/');
+
+    // Split the current URL into parts by '/'
+    $urlParts = explode('/', $currentUrl);
+
+    // Normalize the menu (remove leading/trailing slashes)
+    $menu = trim($menu, '/');
+
+    // Check if the $menu matches any part of the URL
+    if (in_array($menu, $urlParts)) {
+        return $class;
+    }
+
+    // If no match and $menu is '/' (home), return the class
+    if (count($urlParts) == 1 && ($menu === '' || $menu === '/')) {
+        return $class;
+    }
+
+    return '';
+}
+
+
+
+function generateStars(float $rating, int $maxStars = 5): string
+{
+    $fullStars = floor($rating); // Number of full stars
+    $halfStar = ($rating - $fullStars) >= 0.5; // Check if there's a half star
+    $emptyStars = $maxStars - $fullStars - ($halfStar ? 1 : 0); // Calculate empty stars
+
+    $starsHtml = '';
+
+    // Add full stars
+    for ($i = 0; $i < $fullStars; $i++) {
+        $starsHtml .= '<span class="text-warning">★</span>';
+    }
+
+    // Add half star
+    if ($halfStar) {
+        $starsHtml .= '<span class="text-warning">☆</span>';
+    }
+
+    // Add empty stars
+    for ($i = 0; $i < $emptyStars; $i++) {
+        $starsHtml .= '<span class="text-muted">☆</span>';
+    }
+
+    return $starsHtml;
 }

@@ -30,11 +30,6 @@ class Paystack
                 "Cache-Control: no-cache",
             ];
 
-            // Adjust for GET requests
-            if ($method === 'get' && !empty($params)) {
-                $url .= '?' . http_build_query($params);
-            }
-
             $curl = curl_init();
 
             // Set common cURL options
@@ -43,7 +38,7 @@ class Paystack
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_CUSTOMREQUEST => strtoupper($method),
                 CURLOPT_HTTPHEADER => $headers,
-                CURLOPT_POSTFIELDS => ($method !== 'get') ? http_build_query($params) : null,
+                CURLOPT_POSTFIELDS => http_build_query($params),
             ]);
 
             $response = curl_exec($curl);
@@ -54,14 +49,19 @@ class Paystack
             if ($error) {
                 throw new Exception('Request Error: ' . $error);
             }
+			// Decode the JSON response
+			$jsonResponse = json_decode($response);
 
-            return $response;
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				throw new Exception('Invalid JSON response');
+			}
+
+			return $jsonResponse;
         } catch (Exception $exception) {
             // Handle request exception
             return null;
         }
     }
-
 
     //Bonus Start
     public function detectNetwork($phoneNumber)
@@ -72,6 +72,7 @@ class Paystack
             case "053":
             case "055":
             case "059":
+            case "054":
             case "024":
                 $network = "MTN";
                 break;
@@ -92,9 +93,75 @@ class Paystack
     }
     //Bonus End
 
-    public function createSubAccount($name, $bank, $number, $email)
+	// Transactions Start
+    public function initializeTransaction($amount, $email, $currency = 'GHS', $callback_url = '', $split_code = '', $reference)
     {
+        $fields = [
+            "amount" => $amount*100,
+            "email" => $email,
+            "currency" => $currency,
+            "callback_url" => $callback_url,
+            "reference" => $reference,
+            "split_code" => $split_code
+        ];
+        return $this->setHttp('post', '/transaction/initialize', $fields);
     }
+    public function verifyTransaction($reference)
+    {
+        $fields = [];
+        return $this->setHttp('get', '/transaction/verify/'.$reference, $fields);
+    }
+	// Transactions End
+    
+	// Transaction Split Start
+    public function createSplit($name, $currency, $subaccounts = [], $split_type)
+    {
+        $fields = [
+            "name" => $name,
+            "type" => $split_type,
+            "currency" => $currency,
+            "bearer_type" => 'account',
+            "subaccounts" => $subaccounts
+        ];
+        return $this->setHttp('post', '/split', $fields);
+    }
+    
+	// Transaction Split End
+    
+	// Subaccounts Start
+    public function createSubAccount($business_name, $name, $bank, $number, $email, $description, $percentage_charge)
+    {
+        $fields = [
+            "business_name" => $business_name,
+            "settlement_bank" => $bank,
+            "account_number" => $number,
+            "percentage_charge" => $percentage_charge,
+            "description" => $description,
+            "primary_contact_name" => $name,
+            "primary_contact_email" => $email,
+        ];
+        return $this->setHttp('post', '/subaccount', $fields);
+    }
+    
+    public function updateSubAccount($code, $business_name, $name, $bank, $number, $email, $description, $percentage_charge)
+    {
+        $fields = [
+            "business_name" => $business_name,
+            "settlement_bank" => $bank,
+            "account_number" => $number,
+            "percentage_charge" => $percentage_charge,
+            "description" => $description,
+            "primary_contact_name" => $name,
+            "primary_contact_email" => $email,
+        ];
+        return $this->setHttp('put', '/subaccount/'.$code, $fields);
+    }
+    
+    public function fetchSubAccount($id_or_code){
+        return $this->setHttp('get', '/subaccount/'.$id_or_code, []);
+    }
+	
+	//Subaccounts End
 
     // Transfers Recipients Start
     public function createTransferReceipient($name, $bank, $number, $email)
@@ -153,29 +220,34 @@ class Paystack
     public function fetchTransfer($transfer_code)
     {
         $fields = [];
-        return $this->setHttp('get', '/transfer/' . $transfer_code, $fields);
+        return $this->setHttp('get', '/transfer/'.$transfer_code, $fields);
     }
     public function verifyTransfer($reference)
     {
         $fields = [];
-        return $this->setHttp('get', '/transfer/verify/' . $reference, $fields);
+        return $this->setHttp('get', '/transfer/verify/'.$reference, $fields);
     }
     //Transfers End
 
     //Charge Start
-    public function charge($email, $amount, $network, $phone_number)
-    {
-        $fields = [
-            'email' => $email,
-            'amount' => $amount * 100,
-            'currency' => "GHS",
-            "mobile_money" => [
-                "provider" => $network,
-                "phone" => $phone_number
-            ]
-        ];
-        return $this->setHttp('post', '/charge', $fields);
-    }
+        public function charge($email, $amount, $network, $phone_number, $code_type = '', $code = '')
+        {
+            $fields = [
+                'email' => $email,
+                'amount' => $amount*100,
+                'currency' => "GHS",
+                "mobile_money" => [
+                    "provider" => $network,
+                    "phone" => $phone_number
+                ]
+            ];
+            
+            if(!empty($code_type) && !empty($code)){
+                $fields["$code_type"] = $code;
+            }
+            
+            return $this->setHttp('post', '/charge', $fields);
+        }
     public function submitOTP($otp, $reference)
     {
         $fields = [
@@ -195,7 +267,7 @@ class Paystack
     public function pendingCharge($reference)
     {
         $fields = [];
-        return $this->setHttp('get', '/charge/' . $reference, $fields);
+        return $this->setHttp('get', '/charge/'.$reference, $fields);
     }
     //Charge Start
 
@@ -207,37 +279,99 @@ class Paystack
     }
     //Verification End
 
-    //Transactions Start
-    public function InitializeTransaction($email, $amount, $callback_url, $channels)
-    {
-        $fields = [
-            'email' => $email,
-            'amount' => $amount * 100,
-            'currency' => "GHS",
-            'callback_url' => $callback_url,
-            'channels' => $channels
-        ];
-        return $this->setHttp('post', '/transaction/initialize', $fields);
-    }
-    public function verifyTransaction($reference)
+	// Miscellaneous Start
+    public function listBanks($country, $type, $currency)
     {
         $fields = [];
-        return $this->setHttp('get', "/transaction/verify/".$reference, $fields);
+        return $this->setHttp('get', "/bank?country=$country&type=$type&currency=$currency", $fields);
     }
-    public function ChargeAuthorization($email, $amount, $authorization_code, $reference, $channels, $queue = false)
+
+	// Miscellaneous End
+    
+    // Settlements Start
+    public function ListSettlements($subaccount = 'none', $perPage = 50, $page = 1, $status = '', $from = '', $to = '')
+    {
+        $fields = [
+            'perPage' => $perPage,
+            'page' => $page,
+            'subaccount' => $subaccount
+        ];
+        
+        if(!empty($status)){
+            $fields['status'] = $status;
+        }
+        
+        if(!empty($from)){
+            $fields['from'] = $from;
+        }
+        
+        if(!empty($from) && !empty($to)){
+            $fields['to'] = $to;
+        }
+        
+        $query = http_build_query($fields);
+        
+        return $this->setHttp('get', '/settlement?'.$query, $fields);
+    }
+    
+    public function ListSettlementTransactions($id, $perPage = 50, $page = 1, $from = '', $to = '', $status = 'success')
+    {
+        $fields = [
+            'perPage' => $perPage,
+            'page' => $page,
+            'status' => $status
+        ];
+        
+        if(!empty($from)){
+            $fields['from'] = $from;
+        }
+        
+        if(!empty($from) && !empty($to)){
+            $fields['to'] = $to;
+        }
+        
+        $query = http_build_query($fields);
+        
+        return $this->setHttp('get', "/settlement/$id/transactions?$query", $fields);
+    }
+    // Settlements End
+    
+    // Customers Start    
+    public function CreateCustomer($email, $first_name, $last_name, $phone, $metadata = [])
     {
         $fields = [
             'email' => $email,
-            'amount' => $amount * 100,
-            'currency' => "GHS",
-            'authorization_code' => $authorization_code,
-            'reference' => $reference,
-            'queue' => $queue,
-            'channels' => $channels
-        ];
-        return $this->setHttp('post', '/transaction/initialize', $fields);
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'phone' => $phone,
+        ]; 
+        
+        if(count($metadata) > 0){
+            $fields['metadata'] = $metadata;
+        }       
+        return $this->setHttp('post', '/customer', $fields);
     }
-    //Transactions End
+    
+    public function FetchCustomer($code)
+    {
+        $fields = [];        
+        return $this->setHttp('get', '/customer/'.$code, $fields);
+    }    
+    
+    public function UpdateCustomer($code, $first_name, $last_name, $phone, $metadata = [])
+    {
+        $fields = [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'phone' => $phone,
+        ]; 
+        
+        if(count($metadata) > 0){
+            $fields['metadata'] = $metadata;
+        }       
+        return $this->setHttp('put', '/customer/'.$code, $fields);
+    }
+    // Customers End
 }
 
 ?>

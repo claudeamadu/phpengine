@@ -211,7 +211,7 @@ class FirebaseAuth
                 $this->setSessionItem('refreshToken', $data['refreshToken']);
                 $user = [
                     'displayName' => $data['displayName'],
-                    'profilePicture' => $data['profilePicture'],
+                    'profilePicture' => $data['profilePicture'] ?? '',
                     'email' => $data['email']
                 ];
                 $this->setSessionItem('user', json_encode($user));

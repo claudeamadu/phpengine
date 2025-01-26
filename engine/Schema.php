@@ -246,8 +246,17 @@ class Schema
             $courseList["itemListElement"][] = [
                 "@type" => "ListItem",
                 "position" => $position + 1,
-                "url" => $course['url'],
-                "name" => $course['name']
+                "item" => [
+                    "@type" => "Course",
+                    "url" => $course['url'],
+                    "name" => $course['name'],
+                    "description" => $course['description'],
+                    "provider" => [
+                        "@type" => "Organization",
+                        "name" => $course['organization'],
+                        "sameAs" => $course['same_as']
+                    ]
+                ]
             ];
         }
 
@@ -426,8 +435,9 @@ class Schema
         echo "<script type=\"application/ld+json\">" . json_encode($reviewSnippet) . "</script>";
     }
 
-    public static function ProfilePage($name, $alternateName, $identifier, $description, $image, $sameAs = []) {
-        echo "<script type=\"application/ld+json\">".json_encode([
+    public static function ProfilePage($name, $alternateName, $identifier, $description, $image, $sameAs = [])
+    {
+        echo "<script type=\"application/ld+json\">" . json_encode([
             "@context" => "https://schema.org",
             "@type" => "ProfilePage",
             "mainEntity" => [
@@ -439,7 +449,7 @@ class Schema
                 "image" => $image,
                 "sameAs" => $sameAs
             ]
-        ])."</script>";
+        ]) . "</script>";
     }
 }
 

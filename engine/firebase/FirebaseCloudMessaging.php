@@ -25,7 +25,7 @@ class FirebaseCloudMessaging
      * @param string $privateKey
      * @return string
      */
-    function createJWT($header, $payload, $privateKey)
+    private function createJWT($header, $payload, $privateKey)
     {
         $headerEncoded = base64_encode(json_encode($header));
         $payloadEncoded = base64_encode(json_encode($payload));
@@ -47,7 +47,7 @@ class FirebaseCloudMessaging
      *
      * @return string
      */
-    function getAccessToken()
+    public function getAccessToken()
     {
         $tokenFile = 'token.json';
 
@@ -128,7 +128,7 @@ class FirebaseCloudMessaging
      * @param array $data
      * @return mixed
      */
-    function sendNotificationToTopic($accessToken, $topics, $title, $body, $data = null)
+    public function sendNotificationToTopic($accessToken, $topics, $title, $body, $data = null)
     {
         $url = 'https://fcm.googleapis.com/v1/projects/' . $this->projectId . '/messages:send';
 

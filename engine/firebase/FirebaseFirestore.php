@@ -15,7 +15,7 @@ class FirebaseFirestore
      * @param string $Database
      * @param string $ProjectID
      */
-    public function __construct($Token, $Database, $ProjectID)
+    public function __construct($Token = FIREBASE_TOKEN, $Database = FIREBASE_DATEBASE_NAME, $ProjectID = FIREBASE_PROJECT_ID  )
     {
         $this->Token = $Token;
         $this->Database = $Database;

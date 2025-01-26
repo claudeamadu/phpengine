@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Firebase PHP Library
  *
@@ -24,8 +25,7 @@
  *
  * @param array $firestoreData
  * @return array
- */
-function convertFirestoreJSON($firestoreData)
+ */        function convertFirestoreJSON($firestoreData)
 {
     if (isset($firestoreData['documents'])) {
         // If it's a collection
@@ -39,7 +39,11 @@ function convertFirestoreJSON($firestoreData)
             return $fields;
         }, $firestoreData['documents']);
 
-        return ['documents' => $documents];
+        if (isset($firestoreData['nextPageToken'])) {
+            return ['documents' => $documents, 'nextPage' => $firestoreData['nextPageToken']];
+        } else {
+            return ['documents' => $documents];
+        }
     } elseif (isset($firestoreData['name']) && isset($firestoreData['fields'])) {
         // If it's a single document
         $nameParts = explode('/', $firestoreData['name']);
@@ -60,7 +64,6 @@ function convertFirestoreJSON($firestoreData)
             $fields['updateTime'] = $doc['updateTime'];
             return $fields;
         }, $firestoreData);
-
         return ['documents' => $documents];
     }
 
@@ -78,15 +81,21 @@ function convertFieldsToJSON($fields)
     foreach ($fields as $key => $value) {
         if (isset($value['stringValue'])) {
             $result[$key] = $value['stringValue'];
+        } elseif (isset($value['booleanValue'])) {
+            $result[$key] = intval($value['booleanValue']);
         } elseif (isset($value['integerValue'])) {
             $result[$key] = intval($value['integerValue']);
+        } elseif (isset($value['doubleValue'])) {
+            $result[$key] = intval($value['doubleValue']);
+        } elseif (isset($value['timestampValue'])) {
+            $result[$key] = intval($value['timestampValue']);
         } elseif (isset($value['mapValue']['fields'])) {
             $result[$key] = convertFieldsToJSON($value['mapValue']['fields']);
         } elseif (isset($value['arrayValue']['values'])) {
             $result[$key] = array_map(function ($value) {
-                if (isset ($value['stringValue'])) {
+                if (isset($value['stringValue'])) {
                     return $value['stringValue'];
-                } elseif (isset ($value['integerValue'])) {
+                } elseif (isset($value['integerValue'])) {
                     return intval($value['integerValue']);
                 }
                 return null; // Handle other value types as needed
@@ -95,6 +104,7 @@ function convertFieldsToJSON($fields)
     }
     return $result;
 }
+
 /**
  * Convert PHP array to Firestore JSON
  *

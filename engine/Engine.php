@@ -7,19 +7,6 @@ use Pecee\Http\Request;
 // load composer dependencies
 require 'engine/vendor/autoload.php';
 
-require 'Error.php';
-
-// Set error handler function
-function errorHandler($errno, $errstr, $errfile, $errline)
-{
-    throw new CustomError($errstr, 0, $errno, $errfile, $errline);
-}
-
-
-// Set error and exception handlers
-set_error_handler("errorHandler");
-
-
 /**
  * PHP Engine
  *
